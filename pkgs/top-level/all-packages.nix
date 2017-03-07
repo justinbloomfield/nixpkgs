@@ -750,6 +750,8 @@ with pkgs;
 
   cli-visualizer = callPackage ../applications/misc/cli-visualizer { };
 
+  clog-cli = callPackage ../development/tools/clog-cli { };
+
   cloud-init = callPackage ../tools/virtualization/cloud-init { };
 
   clib = callPackage ../tools/package-management/clib { };
@@ -5175,7 +5177,13 @@ with pkgs;
     stdenv = stdenvAdapters.overrideCC pkgs.stdenv pkgs.clang_38;
   });
 
-  go = go_1_7;
+  go_1_8 = callPackage ../development/compilers/go/1.8.nix ({
+    inherit (darwin.apple_sdk.frameworks) Security Foundation;
+  } // stdenv.lib.optionalAttrs stdenv.isDarwin {
+    stdenv = stdenvAdapters.overrideCC pkgs.stdenv pkgs.clang_38;
+  });
+
+  go = go_1_8;
 
   go-repo-root = callPackage ../development/tools/go-repo-root { };
 
@@ -6307,9 +6315,7 @@ with pkgs;
   # Does not actually depend on Qt 5
   inherit (kdeFrameworks) extra-cmake-modules kapidox kdoctools;
 
-  coccinelle = callPackage ../development/tools/misc/coccinelle {
-    ocamlPackages = ocamlPackages_4_01_0;
-   };
+  coccinelle = callPackage ../development/tools/misc/coccinelle { };
 
   cpptest = callPackage ../development/libraries/cpptest { };
 
@@ -6928,7 +6934,8 @@ with pkgs;
 
   agg = callPackage ../development/libraries/agg { };
 
-  allegro = callPackage ../development/libraries/allegro {};
+  allegro = allegro4;
+  allegro4 = callPackage ../development/libraries/allegro {};
   allegro5 = callPackage ../development/libraries/allegro/5.nix {};
 
   amrnb = callPackage ../development/libraries/amrnb { };
@@ -10025,13 +10032,19 @@ with pkgs;
     inherit (darwin.stubs) setfile rez derez;
   };
 
+  wxSVG = callPackage ../development/libraries/wxSVG {
+    wxGTK = wxGTK30;
+  };
+
   wtk = callPackage ../development/libraries/wtk { };
 
   x264 = callPackage ../development/libraries/x264 { };
 
   x265 = callPackage ../development/libraries/x265 { };
 
-  xapian = callPackage ../development/libraries/xapian { };
+  inherit (callPackage ../development/libraries/xapian { })
+    xapian_1_2_22 xapian_1_4_0;
+  xapian = xapian_1_4_0;
 
   xapian-omega = callPackage ../development/libraries/xapian/tools/omega {
     libmagic = file;
@@ -10193,8 +10206,6 @@ with pkgs;
 
   javaCup = callPackage ../development/libraries/java/cup { };
 
-  javasvn = callPackage ../development/libraries/java/javasvn { };
-
   jclasslib = callPackage ../development/tools/java/jclasslib { };
 
   jdom = callPackage ../development/libraries/java/jdom { };
@@ -10250,7 +10261,11 @@ with pkgs;
     go = go_1_7;
   };
 
-  buildGoPackage = buildGo17Package;
+  buildGo18Package = callPackage ../development/go-modules/generic {
+    go = go_1_8;
+  };
+
+  buildGoPackage = buildGo18Package;
 
   go2nix = callPackage ../development/tools/go2nix { };
 
@@ -13099,6 +13114,10 @@ with pkgs;
 
   dvd-slideshow = callPackage ../applications/video/dvd-slideshow { };
 
+  dvdstyler = callPackage ../applications/video/dvdstyler {
+    inherit (gnome2) libgnomeui;
+  };
+
   dwb-unwrapped = callPackage ../applications/networking/browsers/dwb { dconf = gnome3.dconf; };
   dwb = wrapFirefox dwb-unwrapped { desktopName = "dwb"; };
 
@@ -14608,6 +14627,8 @@ with pkgs;
   smtube = libsForQt55.callPackage ../applications/video/smtube {};
 
   sudolikeaboss = callPackage ../tools/security/sudolikeaboss { };
+
+  speedread = callPackage ../applications/misc/speedread { };
 
   sup = callPackage ../applications/networking/mailreaders/sup {
     ruby = ruby_2_3.override { cursesSupport = true; };
@@ -16370,6 +16391,8 @@ with pkgs;
 
   gambatte = callPackage ../games/gambatte { };
 
+  garden-of-coloured-lights = callPackage ../games/garden-of-coloured-lights { allegro = allegro4; };
+
   gav = callPackage ../games/gav { };
 
   gcs = callPackage ../games/gcs { };
@@ -17708,6 +17731,10 @@ with pkgs;
 
   lilypond = callPackage ../misc/lilypond { guile = guile_1_8; };
   lilypond-unstable = callPackage ../misc/lilypond/unstable.nix { guile = guile_1_8; };
+  lilypond-with-fonts = callPackage ../misc/lilypond/with-fonts.nix {
+    lilypond = lilypond-unstable;
+  };
+  openlilylib-fonts = callPackage ../misc/lilypond/fonts.nix { };
 
   mailcore2 = callPackage ../development/libraries/mailcore2 { };
 
