@@ -6,13 +6,13 @@
 
 stdenv.mkDerivation rec {
   name = "qtox-${version}";
-  version = "1.8.1";
+  version = "1.10.2";
 
   src = fetchFromGitHub {
     owner  = "tux3";
     repo   = "qTox";
     rev    = "v${version}";
-    sha256 = "073kwfaw5n7vvcpwrpdbw5mlswbbwjipx7yy4a95r9z0gjljqnhq";
+    sha256 = "0c2633rc9l73q9qs9hybn11hmlqbwsvih3sf6jk1jp4151k5wp1y";
   };
 
   buildInputs = [
@@ -27,11 +27,14 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake makeQtWrapper pkgconfig ];
 
+  cmakeFlags = [
+    "-DGIT_DESCRIBE=${version}"
+  ];
+
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/bin
-    cp qtox $out/bin
+    install -Dm755 qtox $out/bin/qtox
     wrapQtProgram $out/bin/qtox
 
     runHook postInstall
@@ -42,7 +45,7 @@ stdenv.mkDerivation rec {
   meta = with stdenv.lib; {
     description = "Qt Tox client";
     license = licenses.gpl3;
-    maintainers = with maintainers; [ viric jgeerds akaWolf ];
+    maintainers = with maintainers; [ viric jgeerds akaWolf peterhoeg ];
     platforms = platforms.all;
   };
 }

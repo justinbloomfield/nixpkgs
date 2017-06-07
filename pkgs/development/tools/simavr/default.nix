@@ -4,7 +4,6 @@
 stdenv.mkDerivation rec {
   name = "simavr-${version}";
   version = "1.5";
-  enableParallelBuilding = true;
 
   src = fetchFromGitHub {
     owner = "buserror";
@@ -13,8 +12,14 @@ stdenv.mkDerivation rec {
     sha256 = "0b2lh6l2niv80dmbm9xkamvnivkbmqw6v97sy29afalrwfxylxla";
   };
 
+  # ld: cannot find -lsimavr
+  enableParallelBuilding = false;
+
   buildFlags = "AVR_ROOT=${avrgcclibc}/avr SIMAVR_VERSION=${version}";
   installFlags = buildFlags + " DESTDIR=$(out)";
+
+  # Hack to avoid TMPDIR in RPATHs.
+  preFixup = ''rm -rf "$(pwd)" && mkdir "$(pwd)" '';
 
   postFixup = ''
     target="$out/bin/simavr"

@@ -1,12 +1,13 @@
 { stdenv, lib, fetchurl, makeWrapper, jre }:
 
 stdenv.mkDerivation rec {
-  name = "ammonite-repl-${version}";
-  version = "0.8.2";
+  name = "ammonite-${version}";
+  version = "0.9.9";
+  scalaVersion = "2.12";
 
   src = fetchurl {
-    url = "https://github.com/lihaoyi/Ammonite/releases/download/${version}/2.12-${version}";
-    sha256 = "0fgwqdvk0nljd6xm16r8qdhjcp7ix4vx91w5ab856hllf4911120";
+    url = "https://github.com/lihaoyi/Ammonite/releases/download/${version}/${scalaVersion}-${version}";
+    sha256 = "0qiqy681y1w21gjxw30kn44vxh9615j3825v06aq690p56w3rc63";
   };
 
   propagatedBuildInputs = [ jre ] ;

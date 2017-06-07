@@ -1,27 +1,46 @@
 { lib, stdenv, fetchurl, fetchFromGitHub, perl, curl, bzip2, sqlite, openssl ? null, xz
-, pkgconfig, boehmgc, perlPackages, libsodium, aws-sdk-cpp
+, pkgconfig, boehmgc, perlPackages, libsodium, aws-sdk-cpp, brotli, readline
 , autoreconfHook, autoconf-archive, bison, flex, libxml2, libxslt, docbook5, docbook5_xsl
+, libseccomp, busybox
 , storeDir ? "/nix/store"
 , stateDir ? "/nix/var"
+, confDir ? "/etc"
 }:
 
 let
 
+  sh = busybox.override {
+    useMusl = true;
+    enableStatic = true;
+    enableMinimal = true;
+    extraConfig = ''
+      CONFIG_ASH y
+      CONFIG_ASH_BUILTIN_ECHO y
+      CONFIG_ASH_BUILTIN_TEST y
+      CONFIG_ASH_OPTIMIZE_FOR_SIZE y
+    '';
+  };
+
   common = { name, suffix ? "", src, fromGit ? false }: stdenv.mkDerivation rec {
     inherit name src;
     version = lib.getVersion name;
+
+    is112 = lib.versionAtLeast version "1.12pre";
 
     VERSION_SUFFIX = lib.optionalString fromGit suffix;
 
     outputs = [ "out" "dev" "man" "doc" ];
 
     nativeBuildInputs =
-      [ perl pkgconfig ]
+      [ pkgconfig ]
+      ++ lib.optionals (!is112) [ perl ]
       ++ lib.optionals fromGit [ autoreconfHook autoconf-archive bison flex libxml2 libxslt docbook5 docbook5_xsl ];
 
     buildInputs = [ curl openssl sqlite xz ]
       ++ lib.optional (stdenv.isLinux || stdenv.isDarwin) libsodium
-      ++ lib.optional ((stdenv.isLinux || stdenv.isDarwin) && lib.versionAtLeast version "1.12pre")
+      ++ lib.optionals fromGit [ brotli readline ] # Since 1.12
+      ++ lib.optional (stdenv.isLinux && is112) libseccomp
+      ++ lib.optional ((stdenv.isLinux || stdenv.isDarwin) && is112)
           (aws-sdk-cpp.override {
             apis = ["s3"];
             customMemoryManagement = false;
@@ -41,14 +60,16 @@ let
     configureFlags =
       [ "--with-store-dir=${storeDir}"
         "--localstatedir=${stateDir}"
-        "--sysconfdir=/etc"
-        "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
-        "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
+        "--sysconfdir=${confDir}"
         "--disable-init-state"
         "--enable-gc"
       ]
-      ++ lib.optional (!lib.versionAtLeast version "1.12pre") [
+      ++ lib.optionals (!is112) [
+        "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
+        "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
         "--with-www-curl=${perlPackages.WWWCurl}/${perl.libPrefix}"
+      ] ++ lib.optionals (is112 && stdenv.isLinux) [
+        "--with-sandbox-shell=${sh}/bin/busybox"
       ];
 
     makeFlags = "profiledir=$(out)/etc/profile.d";
@@ -95,31 +116,55 @@ let
       license = stdenv.lib.licenses.lgpl2Plus;
       maintainers = [ stdenv.lib.maintainers.eelco ];
       platforms = stdenv.lib.platforms.all;
+      outputsToInstall = [ "out" "man" ];
     };
+
+    passthru = { inherit fromGit; };
+  };
+
+  perl-bindings = { nix }: stdenv.mkDerivation {
+    name = "nix-perl-" + nix.version;
+
+    inherit (nix) src;
+
+    postUnpack = "sourceRoot=$sourceRoot/perl";
+
+    nativeBuildInputs =
+      [ perl pkgconfig curl nix libsodium ]
+      ++ lib.optionals nix.fromGit [ autoreconfHook autoconf-archive ];
+
+    configureFlags =
+      [ "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
+        "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
+      ];
+
+    preConfigure = "export NIX_STATE_DIR=$TMPDIR";
+
+    preBuild = "unset NIX_INDENT_MAKE";
   };
 
 in rec {
 
   nix = nixStable;
 
-  nixStable = common rec {
-    name = "nix-1.11.7";
+  nixStable = (common rec {
+    name = "nix-1.11.9";
     src = fetchurl {
       url = "http://nixos.org/releases/nix/${name}/${name}.tar.xz";
-      sha256 = "1a6fd2a23f5fde614c3937c0d51eff46d28dd30d245a66d34d59b15fd9bb8f2d";
+      sha256 = "0e943e277f37843f9196b0293cc31d828613ad7a328ee77cd5be01935dc6e7e1";
     };
-  };
+  }) // { perl-bindings = nixStable; };
 
-  nixUnstable = lib.lowPrio (common rec {
+  nixUnstable = (lib.lowPrio (common rec {
     name = "nix-1.12${suffix}";
-    suffix = "pre5073_1cf4801";
+    suffix = "pre5413_b4b1f452";
     src = fetchFromGitHub {
       owner = "NixOS";
       repo = "nix";
-      rev = "1cf480110879ffc8aee94b4b75999da405b71d7c";
-      sha256 = "1iwpddz0yni7cz2g9asj6nmrwhaai3rhfmkq954hph8nx02c3l02";
+      rev = "b4b1f4525f8dc8f320d666c208bff5cb36777580";
+      sha256 = "0qb18k2rp6bbg8g50754srl95dq0lr96i297856yhrx1hh1ja37z";
     };
     fromGit = true;
-  });
+  })) // { perl-bindings = perl-bindings { nix = nixUnstable; }; };
 
 }
