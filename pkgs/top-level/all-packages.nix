@@ -15804,6 +15804,12 @@ with pkgs;
     patches = config.st.patches or null;
   };
 
+  xst = callPackage ../applications/misc/xst {
+    conf = config.xst.conf or null;
+    patches = config.xst.conf or null;
+    extraLibs = config.xst.extraLibs or [];
+  };
+  
   stag = callPackage ../applications/misc/stag {
     curses = ncurses;
   };
@@ -17695,6 +17701,8 @@ with pkgs;
 
   metis = callPackage ../development/libraries/science/math/metis {};
 
+  nausea = callPackage ../applications/audio/nausea { };
+  
   nauty = callPackage ../applications/science/math/nauty {};
 
   sage = callPackage ../applications/science/math/sage { };
