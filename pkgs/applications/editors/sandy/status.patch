@@ -1,0 +1,18 @@
+diff --git a/config.def.h b/config.def.h
+index fa80e52..83acf01 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,11 +1,11 @@
+ /* A simplified way to customize */
+-#define USE_TERM_STATUS 1
++#define USE_TERM_STATUS 0
+ #define BOTTOM_TITLE    0
+ #define HILIGHT_CURRENT 1
+ #define HILIGHT_SYNTAX  1
+ #define SHOW_NONPRINT   0
+ #define HANDLE_MOUSE    1
+-#define VIM_BINDINGS    1
++#define VIM_BINDINGS    0
+ 
+ /* Things unlikely to be changed, yet still in the config.h file */
+ static const bool   isutf8     = TRUE;

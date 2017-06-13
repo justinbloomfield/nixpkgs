@@ -4012,6 +4012,8 @@ with pkgs;
 
   salut_a_toi = callPackage ../applications/networking/instant-messengers/salut-a-toi {};
 
+  sandy = callPackage ../applications/editors/sandy { };
+
   samplicator = callPackage ../tools/networking/samplicator { };
 
   scanbd = callPackage ../tools/graphics/scanbd { };
