@@ -13356,6 +13356,8 @@ with pkgs;
     inherit (darwin) IOKit;
   };
 
+  cdex = callPackage ../applications/window-managers/cdex { };
+  
   cdparanoia = cdparanoiaIII;
 
   cdparanoiaIII = callPackage ../applications/audio/cdparanoia {
@@ -16706,6 +16708,8 @@ with pkgs;
 
   xsd = callPackage ../development/libraries/xsd { };
 
+  xscreenshot = callPackage ../tools/X11/xscreenshot/default.nix { };
+  
   xscreensaver = callPackage ../misc/screensavers/xscreensaver {
     inherit (gnome2) libglade;
   };
