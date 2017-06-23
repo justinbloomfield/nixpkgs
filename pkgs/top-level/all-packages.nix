@@ -2871,6 +2871,8 @@ with pkgs;
 
   libsrs2 = callPackage ../development/libraries/libsrs2 { };
 
+  libtermbox = callPackage ../development/libraries/libtermbox { };
+
   libtermkey = callPackage ../development/libraries/libtermkey { };
 
   libtelnet = callPackage ../development/libraries/libtelnet { };
