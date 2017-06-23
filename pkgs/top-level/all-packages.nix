@@ -4056,7 +4056,7 @@ with pkgs;
 
   seqdiag = pythonPackages.seqdiag;
 
-  sex = ../applications/editors/sex { };
+  sex = callPackage ../applications/editors/sex { };
 
   screenfetch = callPackage ../tools/misc/screenfetch { };
 
