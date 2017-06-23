@@ -4056,6 +4056,8 @@ with pkgs;
 
   seqdiag = pythonPackages.seqdiag;
 
+  sex = ../applications/editors/sex { };
+
   screenfetch = callPackage ../tools/misc/screenfetch { };
 
   sg3_utils = callPackage ../tools/system/sg3_utils { };
