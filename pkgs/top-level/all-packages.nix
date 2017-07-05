@@ -16397,6 +16397,8 @@ with pkgs;
     guile = guile_2_0;
   };
 
+  wendy = callPackage ../applications/misc/wendy { };
+
   westonLite = callPackage ../applications/window-managers/weston {
     pango = null;
     freerdp = null;
