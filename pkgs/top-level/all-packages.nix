@@ -17304,6 +17304,8 @@ with pkgs;
 
   tennix = callPackage ../games/tennix { };
 
+  termbox-games = callPackage ../games/termbox-games { };
+
   terraria-server = callPackage ../games/terraria-server/default.nix { };
 
   tibia = callPackage_i686 ../games/tibia { };
